@@ -1,28 +1,22 @@
 pipeline {
     agent any
-    environment {
-      AWS_ACCOUNT_ID = ####
-      AWS_DEFAULT_REGION = #####
-      REPOSITORY_URI = #####
-    }
-    tools {
-      maven "maven-3.9.3"
-    }
+
     stages {
         stage('Checkout from git') {
             steps {
                 // Get code from a GitHub repository
-                git url: '#####', branch: '#####',
-                 credentialsId: '#####'
+                git url: 'https://github.com/cupcy-cloud/python-project-01.git',
+                    branch: 'main',
+                    credentialsId: 'gitpassword'
             }
         }
 
         stage('Build the code') {
             steps {
-                sh "mvn clean install -DskipTests"
+                bat 'echo Building on Windows'
+                bat 'mvn clean install'
             }
         }
-
         stage('SonarQube static analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
@@ -30,54 +24,22 @@ pipeline {
                 }
             }
         }
-        
         stage('Sonar Quality Gate') {
             steps {
                 script {
-                    echo 'Quality Gate'
+                    echo 'Checking SonarQube Quality Gate...'
                     timeout(time: 5, unit: 'MINUTES') {
                         def qualityGate = waitForQualityGate()
                         if (qualityGate.status != 'OK') {
                             error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+
+                            if (qualityGate.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+                            if (qualityGate.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+                            if (qualityGate.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
                         }
-                    }            
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    commitID = sh(returnStdout: true, script: "git rev-parse --short=10 HEAD").trim();
-                    sh "docker build -t ${env.REPOSITORY_URI}/####:${commitID} ."
-                }
-            }
-        }
-
-        stage('Push docker Image') {
-            steps {
-                script {
-                    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${env.REPOSITORY_URI}"
-                    sh "docker push ${env.REPOSITORY_URI}/java-project:${commitID}"
-                }
-            }
-        }
-
-        stage('Commit & Push Manifest') {
-            steps {
-                script {
-                    commitID = sh(returnStdout: true, script: "git rev-parse --short=10 HEAD").trim();
-                    // Checkout code from git
-                    git branch: '####', credentialsId: '####', url: '####'
-                    sh "git config user.name '####'"
-                    sh "git config user.email '#####'"
-                    sh("sed -i 's+image: .*+image: ${REPOSITORY_URI}/java-project:${commitID}+g' k8s-manifest/deployment.yml")
-                    
-                    withCredentials([gitUsernamePassword(credentialsId: '####', gitToolName: 'Default')]) {
-                        sh 'git fetch origin'
-                        sh 'git add -u'
-                        sh "git commit -m 'Update deployment image to ${commitID}'"
-                        sh 'git push origin main'
                     }
                 }
             }
