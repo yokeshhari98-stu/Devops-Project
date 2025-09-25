@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'Devops1-name', url: 'https://github.com/yokeshhari98-stu/Devops-Project/tree/Devops1-name'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'mvn clean package'
