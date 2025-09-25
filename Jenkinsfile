@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'Devops1-name', url: 'https://github.com/yokeshhari98-stu/Devops-Project'
+                git branch: 'Devops1-name', url: 'https://github.com/yokeshhari98-stu/Devops-Project/tree/Devops1-name'
             }
         }
 
